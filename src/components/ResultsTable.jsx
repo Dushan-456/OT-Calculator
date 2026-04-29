@@ -1,6 +1,6 @@
 // src/components/ResultsTable.jsx
 import React from 'react';
-import { formatMinutesToHHMM } from '../utils/otCalculator';
+import { formatMinutesToHHMM, formatTo12Hour } from '../utils/otCalculator';
 
 export default function ResultsTable({ results, toggleHoliday }) {
   if (!results || results.length === 0) {
@@ -46,12 +46,12 @@ export default function ResultsTable({ results, toggleHoliday }) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className="bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/60 font-mono text-slate-700">
-                      {row.checkIn}
+                      {formatTo12Hour(row.checkIn)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className="bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/60 font-mono text-slate-700">
-                      {row.checkOut}
+                      {formatTo12Hour(row.checkOut)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -60,7 +60,7 @@ export default function ResultsTable({ results, toggleHoliday }) {
                         Missing Punch
                       </span>
                     ) : row.status === 'Not Attended' ? (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-500">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-200 text-red-800">
                         Not Attended
                       </span>
                     ) : (
