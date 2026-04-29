@@ -144,10 +144,11 @@ export function processAttendance(data, config) {
         otMinutes = Math.max(0, outMins - inMins);
       } else {
         let eveningOT = Math.max(0, outMins - officeEndMins);
-        if (eveningOT < 60) eveningOT = 0;
+        if (eveningOT < config.eveningOTThreshold) eveningOT = 0;
         let morningOT = 0;
         if (includeMorningOT) {
           morningOT = Math.max(0, officeStartMins - inMins);
+          if (morningOT < config.morningOTThreshold) morningOT = 0;
         }
         otMinutes = eveningOT + morningOT;
       }
