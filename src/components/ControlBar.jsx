@@ -14,8 +14,8 @@ export default function ControlBar({
   
   const handleConfigChange = (e) => {
     const { name, value, type, checked } = e.target;
-    // Lock everything except includeMorningOT if results are showing
-    if (hasResults && name !== 'includeMorningOT') return; 
+    // Lock everything except includeMorningOT and roundTo15Min if results are showing
+    if (hasResults && name !== 'includeMorningOT' && name !== 'roundTo15Min') return; 
     
     setConfig(prev => ({
       ...prev,
@@ -104,19 +104,36 @@ export default function ControlBar({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6 pt-6 border-t border-slate-100 items-center">
-        {/* Morning OT Toggle */}
-        <label className="flex items-center gap-3 cursor-pointer group px-1">
-            <input 
-              type="checkbox" 
-              name="includeMorningOT"
-              checked={config.includeMorningOT}
-              onChange={handleConfigChange}
-              className="checkbox-custom"
-            />
-            <span className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">
-              Include Morning OT
-            </span>
-        </label>
+        {/* Toggles Column */}
+        <div className="flex flex-col gap-3 px-1">
+            {/* Morning OT Toggle */}
+            <label className="flex items-center gap-3 cursor-pointer group">
+                <input 
+                  type="checkbox" 
+                  name="includeMorningOT"
+                  checked={config.includeMorningOT}
+                  onChange={handleConfigChange}
+                  className="checkbox-custom"
+                />
+                <span className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">
+                  Include Morning OT
+                </span>
+            </label>
+
+            {/* Rounding Toggle */}
+            <label className="flex items-center gap-3 cursor-pointer group">
+                <input 
+                  type="checkbox" 
+                  name="roundTo15Min"
+                  checked={config.roundTo15Min}
+                  onChange={handleConfigChange}
+                  className="checkbox-custom"
+                />
+                <span className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">
+                  Round to 15 min (Down)
+                </span>
+            </label>
+        </div>
 
         {/* Morning Threshold */}
         <div className="flex flex-col gap-2">
