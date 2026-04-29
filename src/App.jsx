@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Header from './components/Header'
 import ControlBar from './components/ControlBar'
 import SummaryCard from './components/SummaryCard'
@@ -10,12 +10,21 @@ function App() {
   const [config, setConfig] = useState({
     officeStartTime: '08:30',
     officeEndTime: '16:15',
-    includeMorningOT: false
+    includeMorningOT: false,
+    morningOTThreshold: 30,
+    eveningOTThreshold: 60
   });
   
   const [file, setFile] = useState(null);
   const [rawData, setRawData] = useState([]);
   const [results, setResults] = useState([]);
+  
+  // Automatically recalculate when config changes
+  useEffect(() => {
+    if (rawData.length > 0) {
+      recalculateFromRaw();
+    }
+  }, [config]);
 
   // Handle file selection
   const handleFileUpload = async (event) => {
@@ -40,6 +49,11 @@ function App() {
       console.error("Error processing CSV:", error);
       alert(`Error: ${error.message || "Unknown error during CSV processing. Please check if the file format is correct."}`);
     }
+  };
+
+  const handleReset = () => {
+    setResults([]);
+    setRawData([]);
   };
 
   // Recalculate without reparsing
@@ -94,10 +108,11 @@ function App() {
               const officeEndMins = timeToMins(config.officeEndTime);
               
               let eveningOT = Math.max(0, outMins - officeEndMins);
-              if (eveningOT < 60) eveningOT = 0;
+              if (eveningOT < config.eveningOTThreshold) eveningOT = 0;
               let morningOT = 0;
               if (config.includeMorningOT) {
                 morningOT = Math.max(0, officeStartMins - inMins);
+                if (morningOT < config.morningOTThreshold) morningOT = 0;
               }
               otMinutes = eveningOT + morningOT;
             }
@@ -124,7 +139,9 @@ function App() {
           setConfig={setConfig}
           onFileUpload={handleFileUpload}
           onCalculate={handleCalculate}
+          onReset={handleReset}
           file={file}
+          hasResults={results.length > 0}
         />
         
         {results.length > 0 ? (
