@@ -4,13 +4,17 @@ import ControlBar from './components/ControlBar'
 import SummaryCard from './components/SummaryCard'
 import ResultsTable from './components/ResultsTable'
 import Instructions from './components/Instructions'
+import PrintPreviewModal from './components/PrintPreviewModal'
+import PrintTemplate from './components/PrintTemplate'
 import { parseCSVData, processAttendance } from './utils/otCalculator'
+import { Printer } from 'lucide-react'
 
 function App() {
   const [config, setConfig] = useState({
     officeStartTime: '08:30',
     officeEndTime: '16:15',
     includeMorningOT: false,
+    roundTo15Min: false,
     morningOTThreshold: 30,
     eveningOTThreshold: 60
   });
@@ -18,6 +22,8 @@ function App() {
   const [file, setFile] = useState(null);
   const [rawData, setRawData] = useState([]);
   const [results, setResults] = useState([]);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printData, setPrintData] = useState([]);
   
   // Automatically recalculate when config changes
   useEffect(() => {
@@ -116,6 +122,10 @@ function App() {
               }
               otMinutes = eveningOT + morningOT;
             }
+
+            if (config.roundTo15Min) {
+              otMinutes = Math.floor(otMinutes / 15) * 15;
+            }
           }
 
           return { ...row, isHoliday, otMinutes };
@@ -125,34 +135,73 @@ function App() {
     });
   };
 
-  return (
-    <div className="min-h-screen relative overflow-hidden bg-slate-50">
-      {/* Ambient background styling */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-teal-400/20 rounded-full blur-3xl pointer-events-none"></div>
+  const handlePrint = (dataToPrint) => {
+    setPrintData(dataToPrint);
+    // Increase timeout to ensure images have loaded into the DOM before printing
+    setTimeout(() => {
+      window.print();
+    }, 1000);
+  };
 
-      <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        <ControlBar 
-          config={config}
-          setConfig={setConfig}
-          onFileUpload={handleFileUpload}
-          onCalculate={handleCalculate}
-          onReset={handleReset}
-          file={file}
-          hasResults={results.length > 0}
-        />
+  return (
+    <div className="min-h-screen relative overflow-hidden bg-slate-50 print:bg-transparent">
+      {/* Main UI - Hidden during print */}
+      <div className="no-print">
+        {/* Ambient background styling */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-teal-400/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <Header />
         
-        {results.length > 0 ? (
-          <div className="mt-8 space-y-6">
-            <SummaryCard results={results} />
-            <ResultsTable results={results} toggleHoliday={handleToggleHoliday} />
-          </div>
-        ) : (
-          <Instructions />
-        )}
-      </main>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+          <ControlBar 
+            config={config}
+            setConfig={setConfig}
+            onFileUpload={handleFileUpload}
+            onCalculate={handleCalculate}
+            onReset={handleReset}
+            file={file}
+            hasResults={results.length > 0}
+          />
+          
+          {results.length > 0 ? (
+            <div className="mt-8 space-y-6">
+              <div className="flex justify-between items-center bg-white/50 p-4 rounded-2xl border border-white/50 backdrop-blur-sm">
+                 <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                     <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                   </div>
+                   <div>
+                     <h3 className="text-sm font-bold text-slate-700">Calculation Ready</h3>
+                     <p className="text-xs text-slate-500">Review your results below or prepare for printing</p>
+                   </div>
+                 </div>
+                 <button 
+                  onClick={() => setShowPrintModal(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-200 transition-all hover:-translate-y-0.5 active:translate-y-0 group"
+                 >
+                   <Printer className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                   Print Preview
+                 </button>
+              </div>
+              <SummaryCard results={results} />
+              <ResultsTable results={results} toggleHoliday={handleToggleHoliday} />
+            </div>
+          ) : (
+            <Instructions />
+          )}
+        </main>
+
+        <PrintPreviewModal 
+          isOpen={showPrintModal}
+          onClose={() => setShowPrintModal(false)}
+          results={results}
+          onPrint={handlePrint}
+        />
+      </div>
+
+      {/* Print Template - Only visible during print */}
+      <PrintTemplate data={printData} />
     </div>
   )
 }
