@@ -8,6 +8,21 @@ export function formatMinutesToHHMM(totalMinutes) {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
+export function formatTo12Hour(tStr) {
+  if (!tStr || tStr === 'N/A') return tStr;
+  
+  // Convert to minutes first to get a normalized time
+  const mins = timeToMins(tStr);
+  let h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const period = h >= 12 ? 'PM' : 'AM';
+  
+  h = h % 12;
+  if (h === 0) h = 12;
+  
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${period}`;
+}
+
 export function parseCSVData(file) {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
@@ -151,6 +166,11 @@ export function processAttendance(data, config) {
           if (morningOT < config.morningOTThreshold) morningOT = 0;
         }
         otMinutes = eveningOT + morningOT;
+      }
+
+      // Apply rounding if configured
+      if (config.roundTo15Min) {
+        otMinutes = Math.floor(otMinutes / 15) * 15;
       }
     }
 
