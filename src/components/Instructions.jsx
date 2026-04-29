@@ -1,6 +1,6 @@
 // src/components/Instructions.jsx
 import React from 'react';
-import { FileText, Clock, Calculator, Download, CheckCircle } from 'lucide-react';
+import { FileText, Clock, Calculator, Download, CheckCircle, Printer } from 'lucide-react';
 
 export default function Instructions() {
   const steps = [
@@ -23,6 +23,11 @@ export default function Instructions() {
       icon: <CheckCircle className="w-5 h-5 text-emerald-500" />,
       title: "Review & Adjust",
       description: "Manually toggle public holidays or weekends if they aren't auto-detected."
+    },
+    {
+      icon: <Printer className="w-5 h-5 text-purple-500" />,
+      title: "Print Preview",
+      description: "Open print preview to select dates and generate your official OT application."
     }
   ];
 
@@ -36,7 +41,7 @@ export default function Instructions() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {steps.map((step, index) => (
             <div key={index} className="flex flex-col items-center text-center group">
               <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -70,6 +75,10 @@ export default function Instructions() {
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
               Minimum 1 hour evening work for OT
+            </li>
+            <li className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+              Generates A4 size OT application forms
             </li>
           </ul>
         </div>
