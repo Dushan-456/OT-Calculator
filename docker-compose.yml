@@ -1,0 +1,9 @@
+services:
+  ot-calculator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ot-calculator
+    ports:
+      - "3003:80"
+    restart: unless-stopped
