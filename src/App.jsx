@@ -3,6 +3,7 @@ import Header from './components/Header'
 import ControlBar from './components/ControlBar'
 import SummaryCard from './components/SummaryCard'
 import ResultsTable from './components/ResultsTable'
+import Instructions from './components/Instructions'
 import { parseCSVData, processAttendance } from './utils/otCalculator'
 
 function App() {
@@ -36,8 +37,8 @@ function App() {
       const processed = processAttendance(data, config);
       setResults(processed);
     } catch (error) {
-      console.error("Error parsing CSV:", error);
-      alert("Error parsing CSV file. Please ensure it's a valid CSV format.");
+      console.error("Error processing CSV:", error);
+      alert(`Error: ${error.message || "Unknown error during CSV processing. Please check if the file format is correct."}`);
     }
   };
 
@@ -92,7 +93,8 @@ function App() {
               const officeStartMins = timeToMins(config.officeStartTime);
               const officeEndMins = timeToMins(config.officeEndTime);
               
-              const eveningOT = Math.max(0, outMins - officeEndMins);
+              let eveningOT = Math.max(0, outMins - officeEndMins);
+              if (eveningOT < 60) eveningOT = 0;
               let morningOT = 0;
               if (config.includeMorningOT) {
                 morningOT = Math.max(0, officeStartMins - inMins);
@@ -125,11 +127,13 @@ function App() {
           file={file}
         />
         
-        {results.length > 0 && (
+        {results.length > 0 ? (
           <div className="mt-8 space-y-6">
             <SummaryCard results={results} />
             <ResultsTable results={results} toggleHoliday={handleToggleHoliday} />
           </div>
+        ) : (
+          <Instructions />
         )}
       </main>
     </div>
