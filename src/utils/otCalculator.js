@@ -108,7 +108,7 @@ export function processAttendance(data, config) {
     
     if (!dayData) {
       results.push({
-        id: crypto.randomUUID(),
+        id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
         date: format(day, 'yyyy-MM-dd'),
         dayOfWeek,
         isWeekend,
@@ -143,7 +143,8 @@ export function processAttendance(data, config) {
       if (isWeekend) {
         otMinutes = Math.max(0, outMins - inMins);
       } else {
-        const eveningOT = Math.max(0, outMins - officeEndMins);
+        let eveningOT = Math.max(0, outMins - officeEndMins);
+        if (eveningOT < 60) eveningOT = 0;
         let morningOT = 0;
         if (includeMorningOT) {
           morningOT = Math.max(0, officeStartMins - inMins);
@@ -153,7 +154,7 @@ export function processAttendance(data, config) {
     }
 
     results.push({
-      id: crypto.randomUUID(),
+      id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
       date: dayData.originalDate,
       dayOfWeek,
       isWeekend,
@@ -174,7 +175,7 @@ export function processAttendance(data, config) {
       const checkOut = dayData.punches.length > 1 ? dayData.punches[dayData.punches.length - 1] : 'N/A';
       let status = dayData.punches.length < 2 ? 'Missing Punch' : 'OK';
       results.push({
-        id: crypto.randomUUID(),
+        id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
         date: dayData.originalDate,
         dayOfWeek: 'Unknown',
         isWeekend: false,
