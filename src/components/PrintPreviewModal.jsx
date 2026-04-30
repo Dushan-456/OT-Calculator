@@ -151,7 +151,7 @@ export default function PrintPreviewModal({ isOpen, onClose, results, onPrint })
                     value={formData.salary}
                     onChange={handleFormChange}
                     className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-slate-700"
-                    placeholder="Rs."
+                    placeholder="49 475.00"
                   />
                 </div>
               </div>
