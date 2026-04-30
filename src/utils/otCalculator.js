@@ -29,7 +29,36 @@ export function parseCSVData(file) {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        resolve(results.data);
+        const errors = [...results.errors];
+        const fields = results.meta.fields || [];
+        
+        // Check for required headers (case-insensitive)
+        const hasDate = fields.some(f => f.toLowerCase() === 'date');
+        const hasTime = fields.some(f => f.toLowerCase() === 'time');
+        
+        if (!hasDate || !hasTime) {
+          let missing = [];
+          if (!hasDate) missing.push("'Date'");
+          if (!hasTime) missing.push("'Time'");
+          
+          errors.push({
+            type: 'Validation',
+            message: `Missing required header(s): ${missing.join(' and ')}. Found: ${fields.length > 0 ? fields.join(', ') : 'None'}`
+          });
+        }
+        
+        if (results.data.length === 0 && errors.length === 0) {
+          errors.push({
+            type: 'Validation',
+            message: "The CSV file contains no data rows."
+          });
+        }
+
+        resolve({
+          data: results.data,
+          errors: errors,
+          fields: fields
+        });
       },
       error: (error) => reject(error),
     });
