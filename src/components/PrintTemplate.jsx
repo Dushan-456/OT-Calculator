@@ -1,32 +1,42 @@
 import React from 'react';
 import { formatMinutesToHHMM, formatTo12Hour } from '../utils/otCalculator';
-import page1 from '../assets/images/page-1.png';
-import page2 from '../assets/images/page-2.png';
+import page1 from '../assets/images/page-1.jpg';
+import page2 from '../assets/images/page-2.jpg';
 
-export default function PrintTemplate({ data }) {
+export default function PrintTemplate({ data, formData }) {
   if (!data || data.length === 0) return null;
 
+  const personalInfo = formData || {
+    name: '',
+    designation: '',
+    placeOfWork: '',
+    payUnit: '',
+    salary: ''
+  };
+
+  const totalMinutes = data.reduce((acc, row) => acc + (row.otMinutes || 0), 0);
+
   return (
-    <div className="print-only">
+    <>
       <style>{`
         @media print {
           @page {
-            size: A4;
+            size: legal;
             margin: 0;
           }
           body {
             margin: 0;
             padding: 0;
+            color: #000 !important;
+            background: white;
           }
           .print-page {
-            width: 210mm;
-            height: 297mm;
+            width: 215.9mm;
+            height: 355.6mm;
             position: relative;
             page-break-after: always;
             overflow: hidden;
-            background-size: cover;
-            background-position: center;
-            background-color: transparent !important;
+            background-color: white !important;
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
           }
@@ -37,35 +47,33 @@ export default function PrintTemplate({ data }) {
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: 1;
             object-fit: cover;
           }
 
           .print-table-container {
             position: absolute;
-            top: 60mm; /* Adjust based on your office application template */
+            top: 154mm;
             left: 20mm;
-            right: 20mm;
-            background-color: transparent !important;
+            right: 15mm;
+            z-index: 10;
           }
 
           .print-table {
-            width: 100%;
             border-collapse: collapse;
           }
 
-          .print-table th, .print-table td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: center;
+          .print-table td {
+            border: none;
+            padding: 1.75px;
+            text-align: left;
             font-family: Arial, sans-serif;
-            font-size: 12pt;
-            background-color: transparent !important;
+            color: #000 !important;
           }
 
           .print-table th {
-            /* background-color: #f2f2f2; */
-            font-weight: bold;
+            opacity: 0;
+            height: 10mm;
           }
           
           .no-print {
@@ -77,44 +85,159 @@ export default function PrintTemplate({ data }) {
           }
         }
 
-        /* Styles for screen visibility if needed for debugging */
         .print-only {
           display: none;
         }
       `}</style>
 
-      {/* Page 1 */}
-      <div className="print-page page-1">
-        <img src={page1} alt="Background Page 1" className="print-bg-image" />
-        <div className="print-table-container">
-          <table className="print-table">
-            <thead>
-              <tr>
-                <th style={{ width: '40%' }}>Date</th>
-                <th style={{ width: '20%' }}>Check-in</th>
-                <th style={{ width: '20%' }}>Check-out</th>
-                <th style={{ width: '20%' }}>OT Hours</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row, index) => (
-                <tr key={index}>
-                  <td>{row.date}</td>
-                  <td>{formatTo12Hour(row.checkIn)}</td>
-                  <td>{formatTo12Hour(row.checkOut)}</td>
-                  <td>{formatMinutesToHHMM(row.otMinutes)}</td>
+      <div className="print-only">
+        {/* Page 1 */}
+        <div className="print-page page-1">
+          <img src={page1} alt="Background" className="print-bg-image" />
+
+          {/* Personal Details using inline styles for maximum reliability in print */}
+          <div
+            style={{
+              position: "absolute",
+              top: "42mm",
+              left: "80mm",
+              zIndex: 100,
+              color: "black",
+              fontSize: "13pt",
+              fontFamily: "Arial",
+            }}
+          >
+            {personalInfo.name}
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              top: "42mm",
+              left: "170mm",
+              zIndex: 100,
+              color: "black",
+              fontSize: "12pt",
+              fontFamily: "Arial",
+            }}
+          >
+            {personalInfo.designation}
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              top: "54mm",
+              left: "75mm",
+              zIndex: 100,
+              color: "black",
+              fontSize: "11pt",
+              fontFamily: "Arial",
+            }}
+          >
+            {personalInfo.placeOfWork}
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              top: "54mm",
+              left: "170mm",
+              zIndex: 100,
+              color: "black",
+              fontSize: "11pt",
+              fontFamily: "Arial",
+            }}
+          >
+            {personalInfo.payUnit}
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              top: "66mm",
+              left: "75mm",
+              zIndex: 100,
+              color: "black",
+              fontSize: "11pt",
+              fontFamily: "Arial",
+            }}
+          >
+            Rs . {personalInfo.salary}
+          </div>
+
+          <div className="print-table-container">
+            <table className="print-table">
+              <thead>
+                <tr>
+                  <th style={{ width: "27mm" }}>Date</th>
+                  <th style={{ width: "10mm" }}>From</th>
+                  <th style={{ width: "10mm" }}>To</th>
+                  <th style={{ width: "10mm" }}>Hours</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.map((row, index) => (
+                  <tr key={index}>
+                    <td
+                      style={{
+                        paddingLeft: "9mm",
+                        width: "27mm",
+                        fontSize: "9pt",
+                      }}
+                    >
+                      {row.date}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        width: "10mm",
+                        fontSize: "8pt",
+                      }}
+                    >
+                      {formatTo12Hour(row.checkIn).split(" ")[0]}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        width: "10mm",
+                        fontSize: "8pt",
+                      }}
+                    >
+                      {formatTo12Hour(row.checkOut).split(" ")[0]}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        width: "10mm",
+                        fontSize: "8pt",
+                      }}
+                    >
+                      {formatMinutesToHHMM(row.otMinutes)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div
+      
+            >
+              <h3
+                style={{
+                  fontSize: "12pt",
+                  fontWeight: "bold",
+                  position: "absolute",
+                  top: "162mm",
+                  left: "50mm",
+                }}
+              >
+                 {formatMinutesToHHMM(totalMinutes)}
+              </h3>
+            </div>
+          </div>
+        </div>
+
+        {/* Page 2 */}
+        <div className="print-page page-2">
+          <img src={page2} alt="Background" className="print-bg-image" />
         </div>
       </div>
-
-      {/* Page 2 */}
-      <div className="print-page page-2">
-        <img src={page2} alt="Background Page 2" className="print-bg-image" />
-        {/* Content for second page will go here */}
-      </div>
-    </div>
+    </>
   );
 }
