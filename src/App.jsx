@@ -7,7 +7,7 @@ import Instructions from './components/Instructions'
 import PrintPreviewModal from './components/PrintPreviewModal'
 import PrintTemplate from './components/PrintTemplate'
 import { parseCSVData, processAttendance } from './utils/otCalculator'
-import { Printer } from 'lucide-react'
+import { Printer, AlertCircle } from 'lucide-react'
 
 function App() {
   const [config, setConfig] = useState({
@@ -25,6 +25,7 @@ function App() {
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printData, setPrintData] = useState([]);
   const [printFormData, setPrintFormData] = useState(null);
+  const [error, setError] = useState(null);
   
   // Automatically recalculate when config changes
   useEffect(() => {
@@ -38,6 +39,7 @@ function App() {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
+      setError(null);
     }
   };
 
@@ -46,12 +48,13 @@ function App() {
     if (!file) return;
     
     try {
+      setError(null);
       // Re-parse only if it's the initial run or file changed, but for simplicity we parse on each click so overrides don't get lost
       const { data, errors } = await parseCSVData(file);
       
       if (errors && errors.length > 0) {
         const errorMessage = errors.map(err => err.message).join('\n');
-        alert(`CSV Error:\n${errorMessage}`);
+        setError(errorMessage);
         return;
       }
       
@@ -60,20 +63,21 @@ function App() {
       const processed = processAttendance(data, config);
       
       if (processed.length === 0) {
-        alert("No valid attendance data could be processed. Please check your CSV data format (Dates should be recognizable).");
+        setError("No valid attendance data could be processed. Please check your CSV data format (Dates should be recognizable).");
         return;
       }
       
       setResults(processed);
     } catch (error) {
       console.error("Error processing CSV:", error);
-      alert(`Error: ${error.message || "Unknown error during CSV processing. Please check if the file format is correct."}`);
+      setError(error.message || "Unknown error during CSV processing. Please check if the file format is correct.");
     }
   };
 
   const handleReset = () => {
     setResults([]);
     setRawData([]);
+    setError(null);
   };
 
   // Recalculate without reparsing
@@ -169,6 +173,29 @@ function App() {
         <Header />
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+          {error && (
+            <div className="mb-6 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-2xl flex items-start gap-3 shadow-sm">
+                <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold">Calculation Error</h3>
+                  <div className="text-sm mt-1 whitespace-pre-line opacity-90 leading-relaxed">
+                    {error}
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setError(null)}
+                  className="text-red-400 hover:text-red-600 transition-colors p-1"
+                  aria-label="Dismiss error"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+
           <ControlBar 
             config={config}
             setConfig={setConfig}
