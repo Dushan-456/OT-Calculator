@@ -24,6 +24,7 @@ function App() {
   const [results, setResults] = useState([]);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printData, setPrintData] = useState([]);
+  const [printFormData, setPrintFormData] = useState(null);
   
   // Automatically recalculate when config changes
   useEffect(() => {
@@ -135,12 +136,13 @@ function App() {
     });
   };
 
-  const handlePrint = (dataToPrint) => {
+  const handlePrint = (dataToPrint, formData) => {
     setPrintData(dataToPrint);
-    // Increase timeout to ensure images have loaded into the DOM before printing
+    setPrintFormData(formData);
+    // Increase timeout to ensure images have loaded and React has rendered into the DOM before printing
     setTimeout(() => {
       window.print();
-    }, 1000);
+    }, 1500);
   };
 
   return (
@@ -201,7 +203,7 @@ function App() {
       </div>
 
       {/* Print Template - Only visible during print */}
-      <PrintTemplate data={printData} />
+      <PrintTemplate data={printData} formData={printFormData} />
     </div>
   )
 }
