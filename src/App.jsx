@@ -47,10 +47,23 @@ function App() {
     
     try {
       // Re-parse only if it's the initial run or file changed, but for simplicity we parse on each click so overrides don't get lost
-      const data = await parseCSVData(file);
+      const { data, errors } = await parseCSVData(file);
+      
+      if (errors && errors.length > 0) {
+        const errorMessage = errors.map(err => err.message).join('\n');
+        alert(`CSV Error:\n${errorMessage}`);
+        return;
+      }
+      
       setRawData(data);
       
       const processed = processAttendance(data, config);
+      
+      if (processed.length === 0) {
+        alert("No valid attendance data could be processed. Please check your CSV data format (Dates should be recognizable).");
+        return;
+      }
+      
       setResults(processed);
     } catch (error) {
       console.error("Error processing CSV:", error);
