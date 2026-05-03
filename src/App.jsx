@@ -15,8 +15,9 @@ function App() {
     officeEndTime: '16:15',
     includeMorningOT: false,
     roundTo15Min: false,
-    morningOTThreshold: 30,
-    eveningOTThreshold: 60
+    morningOTThreshold: 60,
+    eveningOTThreshold: 60,
+    lateCutoffTime: '09:15'
   });
   
   const [file, setFile] = useState(null);
@@ -119,34 +120,46 @@ function App() {
       return prevResults.map(row => {
         if (row.id === id) {
           const isHoliday = !row.isHoliday;
-          
-          let otMinutes = 0;
           const inMins = timeToMins(row.checkIn);
           const outMins = timeToMins(row.checkOut);
+          let otMinutes = 0;
+          let status = row.status;
           
           if (row.status !== 'Missing Punch' && row.status !== 'Not Attended') {
             if (row.isWeekend || isHoliday) {
               otMinutes = Math.max(0, outMins - inMins);
+              if (status === 'Late') status = 'OK'; // Reset status if it's now a holiday/weekend
             } else {
               const officeStartMins = timeToMins(config.officeStartTime);
               const officeEndMins = timeToMins(config.officeEndTime);
-              
-              let eveningOT = Math.max(0, outMins - officeEndMins);
-              if (eveningOT < config.eveningOTThreshold) eveningOT = 0;
-              let morningOT = 0;
-              if (config.includeMorningOT) {
-                morningOT = Math.max(0, officeStartMins - inMins);
-                if (morningOT < config.morningOTThreshold) morningOT = 0;
+              const cutoffMins = timeToMins(config.lateCutoffTime);
+              const lateMinutes = Math.max(0, inMins - officeStartMins);
+
+              if (inMins > cutoffMins) {
+                status = 'Late';
+                otMinutes = 0;
+              } else {
+                status = 'OK';
+                let eveningOT = Math.max(0, outMins - officeEndMins);
+                if (eveningOT < config.eveningOTThreshold) eveningOT = 0;
+                let morningOT = 0;
+                if (config.includeMorningOT) {
+                  morningOT = Math.max(0, officeStartMins - inMins);
+                  if (morningOT < config.morningOTThreshold) morningOT = 0;
+                }
+                otMinutes = eveningOT + morningOT;
+                if (lateMinutes > 0) {
+                  otMinutes = Math.max(0, otMinutes - lateMinutes);
+                }
               }
-              otMinutes = eveningOT + morningOT;
             }
 
-            if (config.roundTo15Min) {
+            if (config.roundTo15Min && status !== 'Late') {
               otMinutes = Math.floor(otMinutes / 15) * 15;
             }
           }
 
-          return { ...row, isHoliday, otMinutes };
+          return { ...row, isHoliday, otMinutes, status };
         }
         return row;
       });
