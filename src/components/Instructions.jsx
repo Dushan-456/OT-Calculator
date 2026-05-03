@@ -70,13 +70,17 @@ export default function Instructions() {
             </li>
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-              Date format: YYYY-MM-DD or DD/MM/YYYY
+              Date format: DD/MM/YYYY (Prioritized) or YYYY-MM-DD
             </li>
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-              Minimum 1 hour evening work for OT
+              Late Cutoff: Arrivals after cutoff time = 0 OT (Marked 'Late')
             </li>
             <li className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+              Late Deduction: Minutes late before cutoff are deducted from daily OT
+            </li>
+            <li className="flex items-center gap-2 text-blue-800 font-medium">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
               Generates Legal size OT application forms
             </li>
