@@ -101,21 +101,32 @@ export function processAttendance(data, config) {
     let dateStr = rawDate.trim();
     const timeStr = rawTime.trim();
     
-    let parsedDate = new Date(dateStr);
-    if (!isValid(parsedDate)) {
-      const parts = dateStr.split(/[-/]/);
-      if (parts.length === 3) parsedDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-    }
+    let parsedDate = null;
     
-    if (isValid(parsedDate)) {
-      dateStr = format(parsedDate, 'yyyy-MM-dd');
+    // Try DD/MM/YYYY first (Strictly split by common delimiters)
+    const parts = dateStr.split(/[-/.]/);
+    if (parts.length === 3) {
+      // If the first part is > 12, it's definitely a Day-first format
+      // If the first part is 4 digits, it's Year-first
+      if (parts[0].length === 4) {
+        parsedDate = new Date(`${parts[0]}-${parts[1]}-${parts[2]}`);
+      } else {
+        // Assume DD/MM/YYYY
+        parsedDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      }
+    } else {
+      parsedDate = new Date(dateStr);
     }
+
+    if (!isValid(parsedDate)) return;
+
+    dateStr = format(parsedDate, 'yyyy-MM-dd');
 
     if (!grouped[dateStr]) {
       grouped[dateStr] = {
         date: dateStr,
         originalDate: rawDate.trim(),
-        parsedDate: isValid(parsedDate) ? parsedDate : null,
+        parsedDate: parsedDate,
         punches: []
       };
     }
@@ -129,13 +140,25 @@ export function processAttendance(data, config) {
     const minDate = new Date(Math.min(...validDates));
     const maxDate = new Date(Math.max(...validDates));
     
-    // Get first day of the minimum month, to the last day of the maximum month
-    const intervalStart = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
-    const intervalEnd = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
+    // If the detected range is more than 31 days but the user thinks it's one month,
+    // we should stick to the month of the MAJORITY of dates to avoid the "year view" bug.
+    // However, the standard expectation is to fill the month of the dates found.
+    
+    // Safety check: If year difference is found, someone probably has a wrong date in CSV
+    if (maxDate.getFullYear() !== minDate.getFullYear()) {
+       // Just show actual dates found if it's too messy
+       Object.keys(grouped).sort().forEach(key => {
+         allDays.push(new Date(key));
+       });
+    } else {
+      // Standard: Get first day of the minimum month, to the last day of the maximum month
+      const intervalStart = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+      const intervalEnd = new Date(maxDate.getFullYear(), maxDate.getMonth() + 1, 0);
 
-    // Build array of days
-    for (let d = new Date(intervalStart); d <= intervalEnd; d.setDate(d.getDate() + 1)) {
-      allDays.push(new Date(d));
+      // Limit safety: don't generate more than 62 days (2 months) to prevent UI crash
+      for (let d = new Date(intervalStart); d <= intervalEnd && allDays.length < 62; d.setDate(d.getDate() + 1)) {
+        allDays.push(new Date(d));
+      }
     }
   }
 
@@ -187,18 +210,34 @@ export function processAttendance(data, config) {
       if (isWeekend) {
         otMinutes = Math.max(0, outMins - inMins);
       } else {
-        let eveningOT = Math.max(0, outMins - officeEndMins);
-        if (eveningOT < config.eveningOTThreshold) eveningOT = 0;
-        let morningOT = 0;
-        if (includeMorningOT) {
-          morningOT = Math.max(0, officeStartMins - inMins);
-          if (morningOT < config.morningOTThreshold) morningOT = 0;
+        // Late Arrival Logic
+        const cutoffMins = timeToMins(config.lateCutoffTime);
+        const lateMinutes = Math.max(0, inMins - officeStartMins);
+        
+        if (inMins > cutoffMins) {
+          status = 'Late';
+          otMinutes = 0;
+        } else {
+          let eveningOT = Math.max(0, outMins - officeEndMins);
+          if (eveningOT < config.eveningOTThreshold) eveningOT = 0;
+          
+          let morningOT = 0;
+          if (includeMorningOT) {
+            morningOT = Math.max(0, officeStartMins - inMins);
+            if (morningOT < config.morningOTThreshold) morningOT = 0;
+          }
+          
+          otMinutes = eveningOT + morningOT;
+          
+          // Deduct late minutes if any
+          if (lateMinutes > 0) {
+            otMinutes = Math.max(0, otMinutes - lateMinutes);
+          }
         }
-        otMinutes = eveningOT + morningOT;
       }
 
       // Apply rounding if configured
-      if (config.roundTo15Min) {
+      if (config.roundTo15Min && status !== 'Late') {
         otMinutes = Math.floor(otMinutes / 15) * 15;
       }
     }
