@@ -209,7 +209,7 @@ export default function PrintTemplate({ data, formData }) {
                         fontSize: "8pt",
                       }}
                     >
-                      {formatMinutesToHHMM(row.otMinutes)}
+                      {row.status === 'Late' ? 'Late' : formatMinutesToHHMM(row.otMinutes)}
                     </td>
                   </tr>
                 ))}
