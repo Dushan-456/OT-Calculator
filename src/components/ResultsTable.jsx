@@ -32,6 +32,8 @@ export default function ResultsTable({ results, toggleHoliday }) {
                 ? "bg-blue-50/50 hover:bg-blue-50 transition-colors" 
                 : row.status === 'Missing Punch'
                   ? "bg-orange-50/30 hover:bg-orange-50/50 transition-colors"
+                : row.status === 'Late'
+                  ? "bg-red-50/40 hover:bg-red-50/60 transition-colors"
                   : row.status === 'Not Attended'
                     ? "bg-slate-50/80 hover:bg-slate-100/80 transition-colors"
                     : "bg-white hover:bg-slate-50/50 transition-colors";
@@ -58,6 +60,10 @@ export default function ResultsTable({ results, toggleHoliday }) {
                     {row.status === 'Missing Punch' ? (
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                         Missing Punch
+                      </span>
+                    ) : row.status === 'Late' ? (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 uppercase tracking-tight">
+                        Late
                       </span>
                     ) : row.status === 'Not Attended' ? (
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-200 text-red-800">
