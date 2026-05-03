@@ -137,7 +137,7 @@ export default function ControlBar({
 
         {/* Morning Threshold */}
         <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Morning Min (min)</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Morning Minimum (min)</label>
             <input 
               type="number" 
               name="morningOTThreshold"
@@ -147,11 +147,12 @@ export default function ControlBar({
               disabled={hasResults}
               className={`input-field py-1.5 ${hasResults ? 'opacity-60 cursor-not-allowed' : ''}`}
             />
+            <p className="text-[10px] text-blue-400 leading-tight px-1">You Should have minimum <b>{config.morningOTThreshold} minutes</b> to count morning OT</p>
         </div>
 
         {/* Evening Threshold */}
         <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Evening Min (min)</label>
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Evening Minimum (min)</label>
             <input 
               type="number" 
               name="eveningOTThreshold"
@@ -161,6 +162,7 @@ export default function ControlBar({
               disabled={hasResults}
               className={`input-field py-1.5 ${hasResults ? 'opacity-60 cursor-not-allowed' : ''}`}
             />
+            <p className="text-[10px] text-blue-400 leading-tight px-1">You Should have minimum <b>{config.eveningOTThreshold} minutes</b> to count evening OT</p>
         </div>
 
         {/* Max Coverable Late Time (now Cutoff Time) */}
@@ -174,6 +176,7 @@ export default function ControlBar({
               disabled={hasResults}
               className={`input-field py-1.5 ${hasResults ? 'opacity-60 cursor-not-allowed' : ''}`}
             />
+            <p className="text-[10px] text-blue-400 leading-tight px-1">Arrivals after this time marked as Late and the Late minutes before this time deducted from OT</p>
         </div>
       </div>
     </div>
