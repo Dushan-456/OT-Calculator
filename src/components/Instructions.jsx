@@ -78,7 +78,7 @@ export default function Instructions() {
             </li>
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-              Generates A4 size OT application forms
+              Generates Legal size OT application forms
             </li>
           </ul>
         </div>
